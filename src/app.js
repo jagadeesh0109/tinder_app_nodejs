@@ -1,37 +1,36 @@
-const express = require("express")
-
-const app = express()
-
-app.listen(3000, () => {
-   console.log("server started!!!")
-})
-
-// app.get("/", (req, res) => {
-// res.send("this is inside /")
-// })
-
-// app.get("/user", (req, res) => {
-// res.send({name: "jagadeesh", status: 'single'})
-// })
-
-// app.get("/user", (req, res, next) => {
-//     res.send("response for user !!")
-//     next()
-// })
+const express = require("express");
+const connectDB = require("./config/database");
+const app = express();
+const User = require("./models/user")
 
 
-
-
-// app.post("/body", (req, res) => {
-//     res.send("successfully saved!!!")
-// })
-
-app.get("/getUserData", (req, res) => {
+app.post("/signUp",async (req, res) => {
+    const user = new User({
+        firstName: "Sachin",
+        lastName: "Tendulkar",
+        emailId: "sachin99@gmail.com",
+        password: "sachin@123"
+    })
     try {
-        throw new Error("random")
-        res.send("inside try block")
-    } 
-    catch(err) {
-res.status(500).send("catched the error")
+    await user.save();
+    res.send("data added successfully!!!");
+    } catch(err) {
+    res.status(400).send("error in saving: ", err.message )
     }
 })
+
+
+connectDB()
+  .then((res) => {
+    console.log("ln9-", res);
+    app.listen(3000, () => {
+      console.log("server started!!!");
+    });
+  })
+  .catch((err) => {
+    console.log("ln12-", err);
+  });
+
+app.listen(3000, () => {
+  console.log("server started!!!");
+});
