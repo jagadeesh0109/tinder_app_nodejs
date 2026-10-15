@@ -80,7 +80,8 @@ app.post("/login", async (req, res) => {
     const ispasswordValid = await bcrypt.compare(password, user.password);
     if (ispasswordValid) {
       // add jwt token
-      const token = await user.getJWT;
+      const token = await user.getJWT();
+      console.log("ln84-", token)
       res.cookie("token", token);
 
       res.send(user);
