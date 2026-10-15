@@ -5,6 +5,7 @@ const User = require("./models/user")
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const {userAuth} = require("../src/middlewares/auth")
 
 
 // used to convert string to readable json
@@ -55,7 +56,7 @@ app.get("/feed", async (req, res) => {
 
 
 //delete user
-app.delete("/deleteUser", async (req, res) => {
+app.delete("/deleteUser", userAuth, async (req, res) => {
     id = req.body.userId
 try {
 const deletedUser = await User.findOneAndDelete({ _id: id })
@@ -79,9 +80,10 @@ app.post("/login", async (req, res) => {
     const ispasswordValid = await bcrypt.compare(password, user.password);
     if (ispasswordValid) {
       // add jwt token
-      const token = await jwt.sign({ _id: user._id }, "Dev@Jaga");
+      const token = await user.getJWT;
       res.cookie("token", token);
-      res.send("login sucess!!");
+
+      res.send(user);
     } else {
       throw new Error("password incorrect");
     }
@@ -92,18 +94,19 @@ app.post("/login", async (req, res) => {
 
 //update
 app.patch("/updateUser", async (req, res) => {
-    const id = req.body._id
-    const data = req.body
-    try{
-const upDatedValue = await User.findByIdAndUpdate(id, data, {returnDocument: "after"})
-const message = "its time to test"
-const ref = {upDatedValue, "mesage": message}
-res.send(ref)
-
-    } catch(err) {
-res.status(400).send("Not updated!!!")
-    }
-})
+  const id = req.body._id;
+  const data = req.body;
+  try {
+    const upDatedValue = await User.findByIdAndUpdate(id, data, {
+      returnDocument: "after",
+    });
+    const message = "its time to test";
+    const ref = { upDatedValue, mesage: message };
+    res.send(ref);
+  } catch (err) {
+    res.status(400).send("Not updated!!!");
+  }
+});
 
 //profile
 app.get("/profile", async(req, res) => {

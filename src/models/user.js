@@ -32,6 +32,14 @@ const userSchema  = new mongoose.Schema({
     timestamps: true
 });
 
+userSchema.methods.getJWT = async function() {
+    const user = this;
+    const token = await jwt.sign({ _id: user._id }, "Dev@Jaga" ,{expiresIn: '7d'})
+    console.log("token in userschema-", token)
+    console.log("user-", user)
+    return token;
+}
+
 const User = mongoose.model("User", userSchema);
 
 
