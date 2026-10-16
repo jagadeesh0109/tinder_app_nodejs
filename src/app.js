@@ -5,12 +5,16 @@ const User = require("./models/user")
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const {userAuth} = require("../src/middlewares/auth")
+const {userAuth} = require("../src/middlewares/auth");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
 
 
 // used to convert string to readable json
 app.use(express.json()) 
 app.use(cookieParser())
+app.use("/", authRouter)
+app.use("/", profileRouter)
 
 app.post("/signUp", async (req, res) => {
    // const user = new User(req.body)
@@ -33,7 +37,7 @@ app.post("/signUp", async (req, res) => {
 })
 
 //find one user
-app.get("/getUser", async (req, res) => {
+app.get("/getUser", userAuth, async (req, res) => {
     try {
         const reqUser = await User.findOne({ firstName: req.body.firstName})
         res.send(reqUser)
@@ -45,7 +49,7 @@ app.get("/getUser", async (req, res) => {
 
 
 //find all user
-app.get("/feed", async (req, res) => {
+app.get("/feed", userAuth, async (req, res) => {
     try {
         const getUsers = await User.find({}) 
         res.send(getUsers)
@@ -81,7 +85,6 @@ app.post("/login", async (req, res) => {
     if (ispasswordValid) {
       // add jwt token
       const token = await user.getJWT();
-      console.log("ln84-", token)
       res.cookie("token", token);
 
       res.send(user);
@@ -94,7 +97,7 @@ app.post("/login", async (req, res) => {
 });
 
 //update
-app.patch("/updateUser", async (req, res) => {
+app.patch("/updateUser", userAuth, async (req, res) => {
   const id = req.body._id;
   const data = req.body;
   try {
@@ -110,7 +113,7 @@ app.patch("/updateUser", async (req, res) => {
 });
 
 //profile
-app.get("/profile", async(req, res) => {
+app.get("/profile/view", userAuth, async(req, res) => {
     try{
  const cookies = req.cookies;
     const {token} = cookies;
