@@ -15,7 +15,6 @@ if(!validateEditProfileData(req)) {
  Object.keys(req.body).forEach((fields) => {
 (loggedInUser[fields] = req.body[fields])
  })
- console.log("loggedInUser-"+ loggedInUser)
  await loggedInUser.save()
  res.json({message: "updated success", data: loggedInUser} )
 } catch(err) {
