@@ -9,6 +9,7 @@ const {userAuth} = require("../src/middlewares/auth");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 
 
 // used to convert string to readable json
@@ -17,6 +18,7 @@ app.use(cookieParser())
 app.use("/", authRouter)
 app.use("/", profileRouter)
 app.use("/", requestRouter)
+app.use("/", userRouter)
 
 app.post("/signUp", async (req, res) => {
    // const user = new User(req.body)
