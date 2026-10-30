@@ -12,6 +12,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
     const loggedInUser = req.user;
     const connectionRequests = await ConnectionRequestModel.find({
       toUserId: loggedInUser._id,
+      fromUserId: { $ne: loggedInUser._id },
       status: "interested",
     }).populate("fromUserId", ["firstName", "lastName"]);
     res.json({
@@ -32,8 +33,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", ["firstName", "lastName"])
-      .populate("toUserId", ["firstName", "lastName"]);
+      .populate("fromUserId", ["firstName", "lastName", "emailId"])
+      .populate("toUserId", ["firstName", "lastName", "emailId"]);
 
     const data = connectionRequests.map((row) => {
       if (row.fromUserId._id.toString() == loggedInUser._id.toString()) {
@@ -53,8 +54,6 @@ userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
     // for pagination
-    console.log("ln56--->"+req.query.page)
-    console.log("ln57--->"+parseInt(req.query.page))
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page-1) * limit
@@ -74,13 +73,14 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 
       })
 
+
       //now w e want to hide the hideusers
       const users = await User.find({
         $and: [{_id: {$nin: Array.from(hideUsersFromFeed)}},
         {_id: {$ne: loggedInUser._id}}
         ]
         
-      }).select(["firstName", "lastName"]).skip(skip).limit(limit)
+      }).select(["firstName", "lastName", "emailId"]).skip(skip).limit(limit)
 
     res.send(users);
   } catch (err) {

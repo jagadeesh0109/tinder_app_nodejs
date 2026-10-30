@@ -10,15 +10,22 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+var cors = require("cors")
 
 
 // used to convert string to readable json
 app.use(express.json()) 
 app.use(cookieParser())
+app.use(cors({
+  origin:"http://localhost:5173",
+  credentials: true
+}))
 app.use("/", authRouter)
 app.use("/", profileRouter)
 app.use("/", requestRouter)
 app.use("/", userRouter)
+
+
 
 app.post("/signUp", async (req, res) => {
    // const user = new User(req.body)
@@ -33,8 +40,12 @@ app.post("/signUp", async (req, res) => {
     emailId,
     password : passwordHash
    })
-    await user.save();
-    res.send("data added successfully!!!");
+    const savedUser = await user.save();
+      const token = await savedUser.getJWT();
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 36000000)
+      });
+    res.json({message: "User added successfully", data: savedUser})
     } catch(err) {
     res.status(400).send("error in saving: " + err.message )
     }
@@ -53,7 +64,7 @@ app.get("/getUser", userAuth, async (req, res) => {
 
 
 //find all user
-app.get("/feed", userAuth, async (req, res) => {
+app.get("/getAllUsers", userAuth, async (req, res) => {
     try {
         const getUsers = await User.find({}) 
         res.send(getUsers)
@@ -89,14 +100,16 @@ app.post("/login", async (req, res) => {
     if (ispasswordValid) {
       // add jwt token
       const token = await user.getJWT();
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 36000000)
+      });
 
       res.send(user);
     } else {
       throw new Error("password incorrect");
     }
   } catch (err) {
-    res.send("issue in login" + err.message);
+     res.status(401).send("issue in login: " + err.message);
   }
 });
 
@@ -143,11 +156,13 @@ app.get("/profile/view", userAuth, async(req, res) => {
 
 connectDB()
   .then((res) => {
-   
+    console.log("MongoDB connected successfully");
+
     app.listen(3000, () => {
       console.log("server started!!!");
     });
   })
   .catch((err) => {
+    console.log("MongoDB connection error:", err);
   });
 
