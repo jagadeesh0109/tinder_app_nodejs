@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
@@ -13,7 +15,7 @@ const userRouter = require("./routes/user");
 var cors = require("cors")
 
 
-// used to convert string to readable json
+// used to convert string to readable json 
 app.use(express.json()) 
 app.use(cookieParser())
 app.use(cors({
@@ -138,7 +140,7 @@ app.get("/profile/view", userAuth, async(req, res) => {
         throw new Error("token not found")
     }
 
-    const decodedMessage = await jwt.verify(token, "Dev@Jaga")
+    const decodedMessage = await jwt.verify(token, process.env.JWT_SECRET)
     const {_id} = decodedMessage;
     const user = await User.findById(_id)
     if(!user) {
@@ -158,7 +160,7 @@ connectDB()
   .then((res) => {
     console.log("MongoDB connected successfully");
 
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
       console.log("server started!!!");
     });
   })

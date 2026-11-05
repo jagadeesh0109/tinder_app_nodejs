@@ -3,6 +3,9 @@ const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequestModel = require("../models/connectionRequest");
 const User = require("../models/user");
+const sendEmail = require("../utils/sendEmail")
+
+require("dotenv").config();
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
@@ -47,13 +50,18 @@ requestRouter.post(
       });
 
       const data = await connectRequest.save();
+
+const emailResp = await sendEmail.run("A new friend request received from " + req.user.firstName , req.user.firstName + " is " + status + " in " + toUser.firstName);
+console.log("email", emailResp)
+
       res.json({
         message: req.user.firstName + "is " + status + " in " + toUser.firstName,
         data,
       });
     } catch (err) {
-      res.status(400).send("ERROR-" + err.message);
-    }
+  console.log("Full Error:", err);
+  console.log("Error Message:", err.message);
+}
   },
 );
 
