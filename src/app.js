@@ -12,7 +12,13 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+
+const http = require("http")
+
 var cors = require("cors")
+require("./utils/cornjob");
+
+const initializeSocket = require("./utils/socket")
 
 
 // used to convert string to readable json 
@@ -26,6 +32,10 @@ app.use("/", authRouter)
 app.use("/", profileRouter)
 app.use("/", requestRouter)
 app.use("/", userRouter)
+
+const server = http.createServer(app);
+initializeSocket(server)
+
 
 
 
@@ -160,7 +170,7 @@ connectDB()
   .then((res) => {
     console.log("MongoDB connected successfully");
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log("server started!!!");
     });
   })

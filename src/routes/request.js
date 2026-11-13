@@ -52,14 +52,14 @@ requestRouter.post(
       const data = await connectRequest.save();
 
 const emailResp = await sendEmail.run("A new friend request received from " + req.user.firstName , req.user.firstName + " is " + status + " in " + toUser.firstName);
-console.log("email", emailResp)
+
 
       res.json({
         message: req.user.firstName + "is " + status + " in " + toUser.firstName,
         data,
       });
     } catch (err) {
-  console.log("Full Error:", err);
+  
   console.log("Error Message:", err.message);
 }
   },
