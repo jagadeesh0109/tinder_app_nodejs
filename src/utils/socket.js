@@ -1,5 +1,6 @@
 const socket = require("socket.io");
-const crypto = require("crypto")
+const crypto = require("crypto");
+const { Chat } = require("../models/chat");
 
 
 //to have secured roomid
@@ -23,16 +24,40 @@ const initializeSocket = (server) => {
     });
 
 
-    socket.on("sendMessage", ( {
+    socket.on("sendMessage", async ({
         firstName,
+        lastName,
         userId,
         targetUserId,
         text
         }) => {
        
        const roomId = getSecretRoomId(userId, targetUserId);
+
+       //save message to DB
+       try{
+        let chat = await Chat.findOne({
+            participants: {$all: [userId, targetUserId]}
+        })
+
+        if(!chat) {
+            chat = new Chat({
+                participants: [userId, targetUserId],
+                messages: []
+            })
+        }
+        console.log("ln48--->chat- ",chat)
+        chat.messages.push({
+            senderId: userId,
+            text
+        })
+        await chat.save();
+       } catch(err) {
+        console.log("error in storing message - ",err)
+       }
+       // ends
        
-        io.to(roomId).emit("messageReceived", {firstName, text})
+        io.to(roomId).emit("messageReceived", {firstName, lastName, text})
     });
     socket.on("disconnect", () => {});
   });
